@@ -8,7 +8,7 @@
 
 (ns sandbar.forms
   "Forms and form layouts."
-  (:use [clojure.contrib.def :only [name-with-attributes]]
+  (:use [clojure.tools.macro :only [name-with-attributes]]
         [ring.util.response :only [redirect]]
         [compojure.core :only [routes GET POST PUT]]
         [sandbar.stateful-session :only [flash-put!
@@ -20,7 +20,6 @@
                                    build-validator
                                    validation-errors]])
   (:require [clojure.string :as string]
-            [clojure.contrib.json :as json]
             [clojure.pprint :as pretty]
             [compojure.route :as route]))
 

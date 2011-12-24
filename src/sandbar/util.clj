@@ -8,7 +8,7 @@
 
 (ns sandbar.util
   "Utility functions for sandbar."
-  (:use [clojure.contrib.str-utils :only [re-split re-gsub]])
+  (:require [clojure.string :as string])
   (:import java.io.File))
 
 ;;
@@ -23,7 +23,7 @@
   (map #(keyword %) coll))
 
 (defn path-to-seq [path]
-  (filter #(not (.equals % "")) (re-split #"/" path)))
+  (filter #(not (.equals % "")) (string/split path #"/")))
 
 (defn seq-to-path [coll]
   (apply str (interleave (repeat "/") coll)))
@@ -60,7 +60,7 @@
 ;;
 
 (defn without-ext [s]
-  (apply str (interpose "." (reverse (rest (reverse (re-split #"[.]" s)))))))
+  (apply str (interpose "." (reverse (rest (reverse (string/split s #"[.]")))))))
 
 (defn remove-file-ext [file-name]
   (let [index (.lastIndexOf file-name ".")]
@@ -71,10 +71,11 @@
 (defn file-to-ns-string [f root-dir]
   (let [f-sep File/separator
         test-dir-pattern (re-pattern (str f-sep root-dir f-sep))]
-    (re-gsub (re-pattern f-sep) "."
-             (remove-file-ext
-              (last (re-split test-dir-pattern (.getAbsolutePath f)))))))
- 
+    (string/replace (remove-file-ext
+                     (last (string/split (.getAbsolutePath f) test-dir-pattern)))
+                    (re-pattern f-sep)
+                    ".")))
+
 (defn file-seq-map-filter [dir mf ff]
   (filter ff (map mf (file-seq (File. dir)))))
 

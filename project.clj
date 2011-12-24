@@ -3,11 +3,11 @@
                 and Compojure."
   :url "http://github.com/brentonashworth/sandbar"
   :dependencies [[org.clojure/clojure "1.2.0"]
-                 [org.clojure/clojure-contrib "1.2.0"]
-                 [ring/ring-core "0.3.7"]
-                 [compojure "0.6.2"]
-                 [hiccup "0.3.4"]
-                 [inflections "0.4.2-SNAPSHOT"]]
+                 [ring/ring-core "1.0.1"]
+                 [compojure "0.6.5"]
+                 [hiccup "0.3.6"]
+                 [slingshot "0.10.0"]
+                 [org.clojure/tools.macro "0.1.1"]]
   :dev-dependencies [[jline "0.9.94"]
                      [ring/ring-devel "0.3.7"]
                      [ring/ring-jetty-adapter "0.3.7"]

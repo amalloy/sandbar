@@ -17,20 +17,12 @@
                              append-to-redirect-loc]]
         [sandbar.stateful-session :only [session-get
                                          session-put!
-                                         session-delete-key!]])
-  (:require [clojure.contrib.error-kit :as kit]))
+                                         session-delete-key!]]
+        [slingshot.slingshot :only [try+ throw+]]))
 
 (def *hash-delay* 1000)
 
 (def *sandbar-current-user* nil)
-
-(kit/deferror *access-error* [] [n]
-  {:msg (str "Access error: " n)
-   :unhandled (kit/throw-msg Exception)})
-
-(kit/deferror *authentication-error* [] [n]
-  {:msg (str "Authentication error: " n)
-   :unhandled (kit/throw-msg Exception)})
 
 (defn- redirect-to-permission-denied [uri-prefix]
   (redirect (str uri-prefix "/permission-denied")))
@@ -172,11 +164,13 @@
 
 (defn access-error
   ([] (access-error "Access Denied!"))
-  ([n] (kit/raise *access-error* n)))
+  ([n] (throw+ {:type ::access-error
+                :message (str "Access error: " n)})))
 
 (defn authentication-error
   ([] (authentication-error "No Authenticated User!"))
-  ([n] (kit/raise *authentication-error* n)))
+  ([n] (throw+ {:type ::authentication-error
+                :message (str "Authentication error: " n)})))
 
 (defmacro ensure-authenticated [& body]
   `(if *sandbar-current-user*
@@ -239,22 +233,24 @@
                (append-to-redirect-loc user-status uri-prefix)
                (allow-access? required-roles (:roles user-status))
                (binding [*sandbar-current-user* user-status]
-                 (kit/with-handler
+                 (try+
                    (handler request)
-                   (kit/handle *access-error* [n]
-                               (redirect-to-permission-denied uri-prefix))
-                   (kit/handle *authentication-error* [n]
-                               (if *sandbar-current-user*
-                                 (redirect-to-authentication-error uri-prefix)
-                                 (let [user-status (auth-fn request)]
-                                   (if (redirect? user-status)
-                                     (append-to-redirect-loc user-status
-                                                             uri-prefix)
-                                     (do (session-put! :current-user
-                                                       user-status)
-                                         (set! *sandbar-current-user*
-                                               user-status)
-                                         (handler request))))))))
+                   (catch [:type ::access-error] e
+                     (println "Caught" e)
+                     (redirect-to-permission-denied uri-prefix))
+                   (catch [:type ::authentication-error] e
+                     (println "Caught" e)
+                     (if *sandbar-current-user*
+                       (redirect-to-authentication-error uri-prefix)
+                       (let [user-status (auth-fn request)]
+                         (if (redirect? user-status)
+                           (append-to-redirect-loc user-status
+                                                   uri-prefix)
+                           (do (session-put! :current-user
+                                             user-status)
+                               (set! *sandbar-current-user*
+                                     user-status)
+                               (handler request))))))))
                :else (redirect-to-permission-denied uri-prefix))))))
 
 (defmulti create-authenticator (fn [& args] (first args)))

@@ -27,7 +27,7 @@
   into this format. When a form is submitted, the data will arrive in this
   format for validation and all response functions will receive it in this
   way."
-  (:use [clojure.contrib.def :only [name-with-attributes]]
+  (:use [clojure.tools.macro :only [name-with-attributes]]
         [ring.util.response :only [redirect]]
         ;; This will be removed
         [compojure.core :only [routes GET POST PUT]]
