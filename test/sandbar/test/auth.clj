@@ -348,7 +348,7 @@
                        (fn [r] {:name "t" :roles #{:user}}))
                      {:uri "/x"})
                     (redirect "/authentication-error"))))
-          (testing "access page when authentication is successfull"
+          (testing "access page when authentication is successful"
              (is (= ((with-security
                        (fn [r] (ensure-authenticated
                                 "success"))
